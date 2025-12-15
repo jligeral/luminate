@@ -6,7 +6,7 @@ import { getEnvVal } from "./util";
 
 const MAX_TOKEN_BIG = 1000;
 const MAX_TOKEN_SMALL = 256;
-const MODEL = "gpt-3.5-turbo-instruct";
+const MODEL = "gpt-4.1-mini";
 const TEMPERATURE = 0.7;
 const TOP_P = 1;
 
@@ -47,12 +47,12 @@ export async function generateDimensions(query, context){
     total += 1;
     if (i === 4){
       if (validateFormatForDimensions(categoricalDims, false, true)) {
-        res["categorical"] = JSON.parse(categoricalDims);
+        res["categorical"] = JSON.parse(stripJsonFences(categoricalDims));
         break
       }
     };
     if (validateFormatForDimensions(categoricalDims, false, false)) {
-        res["categorical"] = JSON.parse(categoricalDims);
+        res["categorical"] = JSON.parse(stripJsonFences(categoricalDims));
         break
     };
     // If first response fails, generate at high temperature
@@ -64,7 +64,7 @@ export async function generateDimensions(query, context){
     total += 1;
     if (i === 4){
       if (validateFormatForDimensions(ordinalDims, false, true)) {
-        res["ordinal"] = JSON.parse(ordinalDims);
+        res["ordinal"] = JSON.parse(stripJsonFences(ordinalDims));
         break
       }
     };
@@ -74,7 +74,7 @@ export async function generateDimensions(query, context){
         //     res["categorical"][key] = value;
         // });
         // break
-        res["ordinal"] = JSON.parse(ordinalDims);
+        res["ordinal"] = JSON.parse(stripJsonFences(ordinalDims));
         break
     };
     fail += 1;
@@ -96,7 +96,8 @@ export async function generateDimensions(query, context){
 }
 
 export async function generateCategoricalDimensions(prompt, catNum, valNum, temperature=TEMPERATURE){
-    const message = nominalDimensionDef + `list ${catNum} nominal dimensions and associated ${valNum} possible values
+  console.log("API KEY = ", getEnvVal('VITE_OPENAI_API_KEY'));
+  const message = nominalDimensionDef + `list ${catNum} nominal dimensions and associated ${valNum} possible values
      on which we can categorize and assess the content for the prompt: ${prompt}
     ####
     You MUST answer in the following JSON object format, wrapped in curly braces. There must be ${catNum} items in the JSON object:
@@ -104,7 +105,7 @@ export async function generateCategoricalDimensions(prompt, catNum, valNum, temp
     `
 
     try {
-      const response = await fetch('https://api.openai.com/v1/completions', {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
@@ -112,7 +113,16 @@ export async function generateCategoricalDimensions(prompt, catNum, valNum, temp
           },
           body: JSON.stringify({
             model: MODEL,
-            prompt: `${message}`,
+            messages: [
+              {
+                role: "system",
+                content: "You are a helpful assistant that strictly outputs valid JSON."
+              },
+              {
+                role: "user",
+                content: message
+              }
+            ],
             temperature: temperature,
             max_tokens: MAX_TOKEN_BIG,
             top_p: TOP_P,
@@ -122,12 +132,19 @@ export async function generateCategoricalDimensions(prompt, catNum, valNum, temp
           }),
         });
       if (!response.ok) {
-        throw new Error(`[Error] HTTP error! status: ${response.status}`);
+        const errText = await response.text().catch(() => "");
+        throw new Error(`[OpenAI] HTTP ${response.status}: ${errText}`);
       }
-      const reader : any = response.body?.pipeThrough(new TextDecoderStream()).getReader();
-      const {value, done} = await reader.read();
-      console.log("categorical dimensions", JSON.parse(value)["choices"][0]["text"]);
-      return JSON.parse(value)["choices"][0]["text"];
+      const data = await response.json();
+      const content = data?.choices?.[0]?.message?.content;
+
+      console.log("RAW DIM OUTPUT >>>", content); // Testing
+
+      if (typeof content !== "string" || content.trim() === "") {
+        throw new Error(`[OpenAI] Missing choices[0].message.content. Full response: ${JSON.stringify(data)}`);
+      }
+
+      return content;
 
     } catch (e) {
       let toast = new bootstrap.Toast(document.getElementById('error-toast'));
@@ -147,7 +164,7 @@ export async function generateOrdinalDimensions(prompt, catNum){
       "<dimension name>": ["<lowest degree>", "least", "moderate", "most", "<highest degree>"]
   }`
   try {
-    const response = await fetch('https://api.openai.com/v1/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
@@ -155,7 +172,16 @@ export async function generateOrdinalDimensions(prompt, catNum){
         },
         body: JSON.stringify({
           model: MODEL,
-          prompt: `${message}`,
+          messages: [
+            {
+              role: "system",
+              content: "You are a helpful assistant that strictly outputs valid JSON."
+            },
+            {
+              role: "user",
+              content: message
+            }
+          ],
           temperature: TEMPERATURE,
           max_tokens: MAX_TOKEN_BIG,
           top_p: TOP_P,
@@ -167,10 +193,17 @@ export async function generateOrdinalDimensions(prompt, catNum){
     if (!response.ok) {
       throw new Error(`[Error] HTTP error! status: ${response.status}`);
     }
-    const reader : any = response.body?.pipeThrough(new TextDecoderStream()).getReader();
-    const {value, done} = await reader.read();
-    console.log("ordinal dimensions", JSON.parse(value)["choices"][0]["text"]);
-    return JSON.parse(value)["choices"][0]["text"];
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content;
+
+    console.log("RAW DIM OUTPUT >>>", content); // Testing
+
+    if (typeof content !== "string" || content.trim() === "") {
+      throw new Error(`[OpenAI] Missing choices[0].message.content. Full response: ${JSON.stringify(data)}`);
+    }
+
+    return content;
+
   } catch (e) {
     console.log(e);
     return null;
@@ -188,7 +221,7 @@ export async function generateNumericalDimensions(prompt, numNum){
     {
         "<dimension name>": [<lowest value>, <highest value>]
     }`;
-    const response = await fetch('https://api.openai.com/v1/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
@@ -196,7 +229,16 @@ export async function generateNumericalDimensions(prompt, numNum){
       },
       body: JSON.stringify({
         model: MODEL,
-        prompt: `${message}`,
+        messages: [
+          {
+            role: "system",
+            content: "You are a helpful assistant that strictly outputs valid JSON."
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ],
         temperature: 0.7,
         max_tokens: MAX_TOKEN_SMALL,
         top_p: TOP_P,
@@ -243,7 +285,7 @@ export async function getRelatedTextBasedOnDimension(dimension, val, text){
         "2": "<original text 2>", 
         "3": "<original text 3>"
     }`;
-    const response = await fetch('https://api.openai.com/v1/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
@@ -251,7 +293,16 @@ export async function getRelatedTextBasedOnDimension(dimension, val, text){
       },
       body: JSON.stringify({
         model: MODEL,
-        prompt: `${message}`,
+        messages: [
+          {
+            role: "system",
+            content: "You are a helpful assistant that strictly outputs valid JSON."
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ],
         temperature: 0,
         max_tokens: 256,
         top_p: TOP_P,
@@ -264,6 +315,12 @@ export async function getRelatedTextBasedOnDimension(dimension, val, text){
     return JSON.parse(value)["choices"][0]["text"];
 }
 
+function stripJsonFences(s: string) {
+  return s
+    .replace(/```json\s*/i, "")
+    .replace(/```/g, "")
+    .trim();
+}
 
 /*validate the format of the response
   return true if the response is in the correct format
@@ -271,8 +328,11 @@ export async function getRelatedTextBasedOnDimension(dimension, val, text){
 */
 export function validateFormatForDimensions(response: string, isNumerical: boolean, isLast: boolean){
   try {
-      // check if the response is in the JSON format
-      const result =  JSON.parse(response);
+    console.log("validateFormatForDimensions typeof response:", typeof response, "value:", response);
+    // check if the response is in the JSON format
+    if (typeof response !== "string") return false;
+    const cleaned = stripJsonFences(response);
+      const result =  JSON.parse(cleaned);
       // check if the number of dimensions is correct
       console.log("result length", Object.keys(result).length);
       console.log("dimension size", DatabaseManager.getDimensionSize());
@@ -329,7 +389,7 @@ export async function getKeyTextBasedOnDimension(kvPairs, text){
       "2": "<original text 2>", 
       "3": "<original text 3>"
   }`;
-  const response = await fetch('https://api.openai.com/v1/completions', {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,

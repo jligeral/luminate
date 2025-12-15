@@ -41,7 +41,7 @@ function App() {
         </div>
         <div className="scatter-filter-container" id="scatter-filter-container" style={{display: 'none'}}></div>
         <div id="my-spaceviz">
-            <ScatterCanvasView />
+          <ScatterCanvasView />
         </div>
       </div>
       <ToastContainer />

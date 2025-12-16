@@ -1,19 +1,11 @@
-import React, { useState, useRef, useEffect }  from 'react';
-import { Settings, Info, Help, SupportAgent, Support } from '@mui/icons-material';
+import { Help} from '@mui/icons-material';
 import { Tooltip, AppBar, Toolbar} from "@mui/material"
 import { ApiInputModal } from './api-input';
 import { ContactModal } from './contact';
-import { MenuItem, menuItemClasses } from '@mui/base/MenuItem';
-import { styled } from '@mui/system';
 import { startTutorial } from '../../util/util';
 import './app-bar.scss';
 
-const LOGO = 'luminate-logo-w-words.svg';
-
-export const LuminateAppBar = () => {
-  const handleRedirect = () => {
-    window.open('https://luminate-research.github.io/', '_blank');
-  };
+export const ApplicationBar = () => {
 
   return (
     <div className="app-bar-container">
@@ -26,11 +18,6 @@ export const LuminateAppBar = () => {
           </Tooltip>
           <ContactModal />
           <ApiInputModal />
-          <Tooltip title="About Luminate">
-              <button className="appbar-item" onClick={handleRedirect}>
-                <Info style={{color: '#aaa'}} />
-              </button>
-          </Tooltip> 
         </Toolbar>
       </AppBar>
     </div>

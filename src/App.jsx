@@ -1,10 +1,10 @@
-import {ScatterCanvasView} from './ui/scatter-canvas-view/scatter-canvas-view';
-import { LuminateAppBar } from './ui/app-bar/app-bar';
+import { ScatterCanvasView } from './ui/scatter-canvas-view/scatter-canvas-view';
+import { ApplicationBar } from './ui/app-bar/app-bar';
 import { ToastContainer } from './ui/toasts';
 import { WelcomeModal } from './ui/welcome-modal';
 import Editor from './ui/editor/text-editor';
 import AiForm from './ui/editor/ai-panel/ai-form';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { startTutorial } from './util/util';
 
 function App() {
@@ -30,8 +30,8 @@ function App() {
       /* Render the WelcomeModal when there's no open AI API env value */
       <WelcomeModal updateApiKey={updateApiKey}/>
     )}
-    <div className="Luminate">
-      <LuminateAppBar />
+    <div className="Application">
+      <ApplicationBar />
       <div className="container-fluid">
         <div className="text-editor-container" id="text-editor-container">
           <Editor />

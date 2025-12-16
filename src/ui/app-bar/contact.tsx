@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Modal, Box, Typography, TextField, Button, Tooltip } from '@mui/material';
+import { useState } from 'react';
+import { Modal, Box, Tooltip } from '@mui/material';
 import {SupportAgent} from '@mui/icons-material';
 import './contact.scss';
 
@@ -42,8 +42,8 @@ export function ContactModal() {
         >
           <h4>Contact Us</h4>
           <p className='note'>
-            If you have any questions, comments, or concerns, please reach out to us at  
-            <a href="mailto:luminate.system@gmail.com"> luminate.system@gmail.com</a>
+            If you have any questions, comments, or concerns, please reach out to me at
+            <a href="mailto:luminate.system@gmail.com"> jligeral@hawaii.edu</a>
           </p>
         </Box>
       </Modal>

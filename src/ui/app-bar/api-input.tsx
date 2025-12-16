@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Modal, Box, TextField, Tooltip } from '@mui/material';
 import {Settings} from '@mui/icons-material';
 import { saveEnvVal, getEnvVal } from '../../util/util';
@@ -85,7 +85,7 @@ export function ApiInputModal() {
               name="num-dims"
             />
             <p className='note'>
-              Luminate will not save your OpenAI API key neither in a cookie, localStorage, nor server. 
+              This app will not save your OpenAI API key neither in a cookie, localStorage, nor server.
               You will need to enter it every time you open the app.
               You may also download the source code and run it locally.
             </p>

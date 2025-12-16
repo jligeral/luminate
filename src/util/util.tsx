@@ -51,13 +51,13 @@ export const startTutorial = () => {
     tooltipClass: 'tutorialTooltip',
     steps: [
       {
-        title: 'Luminate Tutorial <img src="luminate-logo.png" style="width:30px; height:30px;"/>',
-        intro: 'This is a walkthrough to get you acquainted with each component of Luminate and help you understand the system.'
+        title: 'Tutorial',
+        intro: 'This is a walkthrough to get you acquainted with each component of the application and help you understand the system.'
       },
       {
         title: 'Text Editor',
         element: document.querySelector('#text-editor-container'),
-        intro: "This is the text editor where you can write your story."
+        intro: "This is the text editor where you can write your ideas."
       },
       {
         title: 'Prompt AI',
@@ -104,15 +104,15 @@ export const startTutorial = () => {
       },
       {
         title:'Menu',
-        intro: ' At the top right corner, you can see 4 icon buttons.\
+        intro: ' At the top right corner, you can see 3 icon buttons.\
                 <ul style=\"list-style-type: none; padding-left: 0; margin-top: 10px;\">\
                   <li style=\"display: flex; align-items: center; gap: 10px; margin-bottom: 10px;\">\
                       <img src=\"tutorial-menu.png\" alt=\"Tutorial\" style=\"width: 30px; height: 30px;\">\
-                      <strong>Tutorial:</strong> You can watch the tutorial of Luminate.\
+                      <strong>Tutorial:</strong> You can watch the tutorial again here.\
                   </li>\
                   <li style=\"display: flex; align-items: center; gap: 10px; margin-bottom: 10px;\">\
                       <img src=\"contact-menu.png\" alt=\"Settings\" style=\"width: 30px; height: auto;\">\
-                      <strong>Contact:</strong> You can contact researchers via email.\
+                      <strong>Contact:</strong> You can contact me via email.\
                   </li>\
                   <li style="display: flex; flex-direction: column; align-items: center; gap: 20px; margin-bottom: 10px;">\
                       <div style="display: flex; width: 100%; gap: 10px;">\
@@ -120,24 +120,16 @@ export const startTutorial = () => {
                           <strong>Settings:</strong> You can enter your OpenAI API key and change the batch size and number of dimensions.\
                           The default batch size is 20 and the number of dimensions is 3.\
                       </div>\
-                      <img src="settings-input.png" alt="Semantic Zoom" style="width: auto; height: 300px; border: 3px solid #eee; border-radius: 10px; ">\
-                  </li>\
-                  <li style=\"display: flex; gap: 10px; margin-bottom: 10px;\">\
-                      <img src=\"about-menu.png\" alt=\"About\" style=\"width: 30px; height: 30px;\">\
-                      <strong>About:</strong> You can learn more about the research paper and the framework that Luminate instantiates.\
+                      <img src="settings-image.png" alt="Semantic Zoom" style="width: auto; height: 300px; border: 3px solid #eee; border-radius: 10px; ">\
                   </li>\
               </ul>\
         ',
       },
       {
-        title: 'Luminate Tutorial <img src="luminate-logo.png" style="width:30px; height:30px;"/>',
-        intro: 'This is the end of the tutorial. You can also watch a 30s video demo video to get a better understanding of Luminate.\
-        <video width="540px" height="360px" controls>\
-          <source src="luminate-video-preview.mp4" type="video/mp4">\
-          Your browser does not support the video tag.\
-        </video>\
-        If you want to watch the tutorial again, click <img src="tutorial-menu.png" style="width:30px; height:auto;"/>\
-        on the top right corner. Enjoy using Luminate!'
+        title: 'Tutorial',
+        intro: 'This is the end of the tutorial. Let me know if you have any concerns or comments about the project.\
+        If you want to start over the tutorial, click <img src="tutorial-menu.png" style="width:30px; height:auto;"/>\
+        on the top right corner.'
       },
     ]
   });

@@ -1,7 +1,7 @@
 // a modal that shows up on the first visit to the site
 // and prompts the user to enter their open ai api key
 import './welcome-modal.scss';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Modal, Box, TextField} from '@mui/material';
 import { saveEnvVal } from '../util/util';
 import * as bootstrap from 'bootstrap';
@@ -19,7 +19,7 @@ export function WelcomeModal( {updateApiKey}){
       let toast = new bootstrap.Toast(document.getElementById('fav-toast'));
       var msg = document.getElementById('toast-text');
       if (msg) {
-        msg.textContent =  "You need to set up the OpenAI API key to use Luminate. Please click on the settings icon in the top right corner to set it up.";
+        msg.textContent =  "You need to set up the OpenAI API key to use this application. Please click on the settings icon in the top right corner to set it up.";
         toast.show();
       }
     }
@@ -57,9 +57,9 @@ export function WelcomeModal( {updateApiKey}){
             borderRadius: 3
           }}
         >
-          <h4>Welcome to Luminate 👋</h4>
+          <h4>Welcome! 👋</h4>
           <p>
-            Luminate is a research prototype for human-AI text-based co-creation powered by GPT 3.5.
+            This is a research prototype for human-AI text-based co-creation using GPT-4.1.
             To start off, please enter your OpenAI API Key in the text field below.
           </p>
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
@@ -77,17 +77,17 @@ export function WelcomeModal( {updateApiKey}){
               You can find your Secret OpenAI API key in your <a href="https://platform.openai.com/account/api-keys" target="_blank">User Settings</a>
             </p>
             <p className='note'>
-              Generate one response in the design space costs about $0.007. By default, Luminate will generate 20 responses at a time which costs about $0.14.
+              Generate one response in the design space costs about $0.007. By default, this app will generate 20 responses at a time which costs about $0.14.
               You can modify the batch size by opening Settings <img src="settings-menu.png" alt="Settings" style={{width: '30px', height: '30px'}}/> in the top right corner.
               Detailed information about the cost can be found in  <a href="https://openai.com/pricing" target="_blank">Pricing</a>
             </p>
             <p className='note'>
-              Luminate will not save your OpenAI API key neither in a cookie, localStorage, nor server. 
+              This application will not save your OpenAI API key neither in a cookie, localStorage, nor server.
               You will need to enter it every time you open the app.
               You may also download the source code and run it locally.
             </p>
             <button type="submit" className='submit-button'>
-              Play Luminate <img src="/luminate-logo.svg" style={{maxHeight: '24px'}} alt="arrow-right" />
+              Start! <img src="/luminate-logo.svg" style={{maxHeight: '24px'}} alt="arrow-right" />
             </button>
           </Box>
         </Box>

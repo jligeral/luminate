@@ -164,115 +164,189 @@ export const VariationBlock = ({ block, zoom, color, scaleIn }) => {
 // F T T
 // F F F
 
+  const submitContinue = () => {
+    if (loadingContinue) return;
+    setLoadingContinue(true);
+
+    continueIdeaInSpace(block, nodeMap, setNodeMap, {
+      count: 1,
+      instruction: continueText.trim(),
+    }).finally(() => {
+      setLoadingContinue(false);
+      setContinueOpen(false);
+      setContinueText("");
+    });
+  };
+
+  let blockContent: JSX.Element;
+
   if (zoom <= 1.5) {
-    return <div key={block.ID + 'dot'} className={`block block-dot ${nodeClassName()}`} style={{background: color}} onClick= {()=>onClickHandler(block)}/>
+    blockContent = (
+      <div key={block.ID + 'dot'} className={`block block-dot ${nodeClassName()}`} style={{background: color}} onClick= {()=>onClickHandler(block)}/>
+    );
   } else if (zoom <= 3) {
-    return <div key={block.ID + 'title'} className={`block block-title ${nodeClassName()}`} style={{background: color+'99'}} onClick= {()=>onClickHandler(block)}>
-      {block.Title}
-      <div className="labels">
+    blockContent = (
+      <div key={block.ID + 'title'} className={`block block-title ${nodeClassName()}`} style={{background: color+'99'}} onClick= {()=>onClickHandler(block)}>
+        {block.Title}
+        <div className="labels">
           {block.Keywords.map(keyword => <DimensionLabel {...{keyword}} />)}
+        </div>
       </div>
-    </div>;
     // Plan: prerender all the keywords, see if that will make things worse or better???
+    );
   } else if (zoom <= 7) {
-    return <div key={block.ID + 'labels'} className={`block-labels ${nodeClassName()}`} style={{background: color+'99'}} onClick= {()=>onClickHandler(block)}>
-      <div className="centered-title">
-        <h6>{block.Title}</h6>
-      </div>
-      {/* <div className="content-section">
-        <p className="keywords-title">Keywords:</p>
-      </div> */}
-      <div className="labels">
-          {block.Keywords.map(keyword => <DimensionLabel {...{keyword}} />)}
-      </div>
-      <DetailsFooter {...{block, loadingMore, setLoadingMore, loadingContinue, setLoadingContinue, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
-  </div>;
-  } else if (zoom <= 12) {
-    return <div key={block.ID + 'sum'} className={`block-sum ${nodeClassName()}`} style={{background: color+'99'}} onClick= {()=>onClickHandler(block)}>
-      <div className="centered-title">
-        <h6>{block.Title}</h6>
-      </div>
-      <div className="content-section">
-        <p className="summary-title">Summary:</p>
-          <p>{block.Summary}</p>
-        <p className="summary-title">Structure:</p>
-          <p>{block.Structure}</p>
-      </div>
-      {/* Attributes */}
-      <p className="summary-title">Attributes:</p>
-      <div className="labels">
-        {Object.entries(block.Dimension.categorical).map(([key, value]) => <DimensionLabel {...{keyword: `${key} : ${value}`}} />)}
-      </div>
-      <DetailsFooter {...{block, loadingMore, setLoadingMore, loadingContinue, setLoadingContinue, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
-      {/* <DetailsFooter {...{block, onBookmarkHandler, onClickHandler, onSelectedHandler,}} /> */}
-    </div>;
-  } else {
-    return <div key={block.ID + 'full'} className={`block-full ${nodeClassName()}`} style={{background: color+'99'}} onClick= {()=>onClickHandler(block)}>
-      <div>
+    blockContent = (
+      <div key={block.ID + 'labels'} className={`block-labels ${nodeClassName()}`} style={{background: color+'99'}} onClick= {()=>onClickHandler(block)}>
         <div className="centered-title">
           <h6>{block.Title}</h6>
         </div>
-        <p style={{ whiteSpace: 'pre-wrap'}}>{block.Result}</p>
+        {/* <div className="content-section">
+        <p className="keywords-title">Keywords:</p>
+      </div> */}
+        <div className="labels">
+          {block.Keywords.map(keyword => <DimensionLabel {...{keyword}} />)}
+        </div>
+        <DetailsFooter {...{block, loadingMore, setLoadingMore, loadingContinue, setLoadingContinue, setContinueOpen, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
+      </div>
+    );
+  } else if (zoom <= 12) {
+    blockContent = (
+      <div key={block.ID + 'sum'} className={`block-sum ${nodeClassName()}`} style={{background: color+'99'}} onClick= {()=>onClickHandler(block)}>
+        <div className="centered-title">
+          <h6>{block.Title}</h6>
+        </div>
+        <div className="content-section">
+          <p className="summary-title">Summary:</p>
+          <p>{block.Summary}</p>
+          <p className="summary-title">Structure:</p>
+          <p>{block.Structure}</p>
+        </div>
         {/* Attributes */}
         <p className="summary-title">Attributes:</p>
         <div className="labels">
           {Object.entries(block.Dimension.categorical).map(([key, value]) => <DimensionLabel {...{keyword: `${key} : ${value}`}} />)}
         </div>
-        <DetailsFooter {...{block, loadingMore, setLoadingMore, loadingContinue, setLoadingContinue, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
+        <DetailsFooter {...{block, loadingMore, setLoadingMore, loadingContinue, setLoadingContinue, setContinueOpen, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
+        {/* <DetailsFooter {...{block, onBookmarkHandler, onClickHandler, onSelectedHandler,}} /> */}
       </div>
-    </div>;
+    );
+  } else {
+    blockContent = (
+      <div key={block.ID + 'full'} className={`block-full ${nodeClassName()}`} style={{background: color+'99'}} onClick= {()=>onClickHandler(block)}>
+        <div>
+          <div className="centered-title">
+            <h6>{block.Title}</h6>
+          </div>
+          <p style={{ whiteSpace: 'pre-wrap'}}>{block.Result}</p>
+          {/* Attributes */}
+          <p className="summary-title">Attributes:</p>
+          <div className="labels">
+            {Object.entries(block.Dimension.categorical).map(([key, value]) => <DimensionLabel {...{keyword: `${key} : ${value}`}} />)}
+          </div>
+          <DetailsFooter {...{block, loadingMore, setLoadingMore, loadingContinue, setLoadingContinue, setContinueOpen, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
+        </div>
+      </div>
+    );
   }
+
+  return (
+    <>
+      {blockContent}
+
+      {continueOpen && (
+        <div className="continue-overlay" onClick={() => setContinueOpen(false)}>
+          <div className="continue-modal" onClick={(e) => e.stopPropagation()}>
+            <h6 style={{ marginBottom: 8 }}>Continue this idea</h6>
+
+            <textarea
+              value={continueText}
+              onChange={(e) => setContinueText(e.target.value)}
+              placeholder="Enter what you would like a continuation of this idea to focus on"
+              rows={4}
+              style={{ width: "100%" }}
+            />
+
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 10 }}>
+              <button
+                onClick={() => {
+                  setContinueOpen(false);
+                  setContinueText("");
+                }}
+              >
+                Cancel
+              </button>
+
+              <button onClick={submitContinue} disabled={loadingContinue}>
+                {loadingContinue ? "Continuing..." : "Generate"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
 };
 
-const DetailsFooter = ({block, loadingMore, setLoadingMore, loadingContinue, setLoadingContinue, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}) => (
+const DetailsFooter = ({
+                         block,
+                         loadingMore,
+                         setLoadingMore,
+                         loadingContinue,
+                         setContinueOpen,
+                         onBookmarkHandler,
+                         onClickHandler,
+                         onSelectedHandler,
+                         nodeMap,
+                         setNodeMap,
+                       }) => (
   <div className="details-footer">
-    <button onClick={() => {
-      if (loadingMore) return;
-      setLoadingMore(true)
-      addSimilarNodesToSpace(block, nodeMap, setNodeMap).then(data => {
-      setLoadingMore(false);
-      })
-    }}>
-      {
-        !loadingMore ?
+    <button
+      onClick={() => {
+        if (loadingMore) return;
+        setLoadingMore(true);
+        addSimilarNodesToSpace(block, nodeMap, setNodeMap).finally(() => {
+          setLoadingMore(false);
+        });
+      }}
+    >
+      {!loadingMore ? (
         <div className="icon-button">
-          <AutoAwesome style={{color: '#777', width: '20px', height: '20px'}} />
+          <AutoAwesome style={{ color: "#777", width: "20px", height: "20px" }} />
           More Like This
-        </div> :
+        </div>
+      ) : (
         <div>
-          <CircularProgress style={{color: '#777'}} size={20} />
+          <CircularProgress style={{ color: "#777" }} size={20} />
           Generating Similar Responses...
         </div>
-      }
+      )}
     </button>
-    <button onClick={() => {
-      if (loadingContinue) return;
-      setLoadingContinue(true);
 
-      continueIdeaInSpace(block, nodeMap, setNodeMap, {
-        count: 1,
-        // optional: you can pass an instruction later via a popup
-        instruction: "Continue developing this idea with more concrete branching choices and consequences."
-      }).then(() => setLoadingContinue(false))
-        .catch(() => setLoadingContinue(false));
-    }}>
-      {
-        !loadingContinue ?
-          <div className="icon-button">
-            <AltRoute style={{color: '#777', width: '20px', height: '20px'}} />
-            Continue Idea
-          </div>
-          :
-          <div>
-            <CircularProgress style={{color: '#777'}} size={20} />
-            Continuing Idea...
-          </div>
-      }
+    <button
+      onClick={() => {
+        if (loadingContinue) return;
+        setContinueOpen(true);
+      }}
+    >
+      {!loadingContinue ? (
+        <div className="icon-button">
+          <AltRoute style={{ color: "#777", width: "20px", height: "20px" }} />
+          Continue Idea
+        </div>
+      ) : (
+        <div>
+          <CircularProgress style={{ color: "#777" }} size={20} />
+          Continuing Idea...
+        </div>
+      )}
     </button>
-    <button onClick={() => onBookmarkHandler(block)} style={{
-      background: block.IsMyFav ? '#1b1b1b99' : '',
-    }}>
-      <Bookmark style={{color: block.IsMyFav ? '#fff' : '#aaa', width: '20px', height: '20px'}}/>
+
+    <button
+      onClick={() => onBookmarkHandler(block)}
+      style={{ background: block.IsMyFav ? "#1b1b1b99" : "" }}
+    >
+      <Bookmark style={{ color: block.IsMyFav ? "#fff" : "#aaa", width: "20px", height: "20px" }} />
     </button>
   </div>
-)
+);

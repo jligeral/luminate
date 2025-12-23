@@ -238,6 +238,81 @@ export async function addSimilarNodesToSpace(node, nodeMap, setNodeMap){
     return {"fail_count": fail_count, "total_count": total_count};
 }
 
+export async function continueIdeaInSpace(baseNode, nodeMap, setNodeMap, options = {}) {
+  const startTime = Date.now();
+
+  const {
+    count = 1,                         // how many continuations to generate
+    instruction = "",                  // optional user guidance (e.g., "focus on player choices")
+    markNew = true,
+  } = options;
+
+  const data = {};
+
+  const responsePromises = Array.from({ length: count }).map(async () => {
+    const id = uuid();
+
+    // “Continue” prompt: builds from the selected node’s concept (Result) rather than reusing node.Prompt verbatim.
+    const wordLimit = "Limit the response to 150 words.\n\n";
+    const baseText = (baseNode?.Result ?? "").trim();
+    const baseTitle = (baseNode?.Title ?? "").trim();
+
+    const continueTask = `
+You are continuing and refining the following idea (do NOT restart from scratch).
+Base idea title: ${baseTitle || "(no title)"}
+
+Base idea:
+${baseText}
+
+${instruction ? `User request:\n${instruction}\n` : ""}
+
+Write the next iteration of this idea:
+- keep the same setting/theme and core concept
+- add concrete, specific details (e.g., branching player choices and consequences if relevant)
+- avoid generic advice; be specific to the base idea
+`.trim();
+
+    const message =
+      wordLimit +
+      editorBackgroundPrompt() +
+      "Prompt: " +
+      continueTask +
+      "\n" +
+      DELIMITER +
+      "\n";
+
+    const response = await generateResponse(message);
+    const trimmedResponse = (response ?? "").trim();
+    const summary = await abstraction(trimmedResponse);
+
+    data[id] = {
+      ...baseNode,
+      ID: id,
+      ParentID: baseNode?.ID ?? null,   // store lineage for future “threads”
+      Prompt: message,
+      Result: trimmedResponse,
+      Summary: summary["Summary"],
+      Keywords: summary["Key Words"],
+      Structure: summary["Structure"],
+      Title: summary["Title"],
+      IsMyFav: false,
+      IsNew: !!markNew,
+    };
+  });
+
+  await Promise.all(responsePromises);
+
+  setNodeMap({
+    ...nodeMap,
+    ...data,
+  });
+
+  const { currBlockId } = useCurrStore.getState();
+  DatabaseManager.addBatchData(currBlockId, data);
+
+  console.log(`ContinueIdea: generated ${Object.keys(data).length} in ${Date.now() - startTime}ms`);
+  return { fail_count, total_count };
+}
 
 async function generateResponse(message){
     // call the OpenAI API to generate a response

@@ -49,14 +49,14 @@ const initEditor = () => {
         class: List,
         inlineToolbar: true,
       },
-      image: {
-        class: ImageTool,
-        inlineToolbar: true,
-      },
-      code: {
-        class: Code,
-        inlineToolbar: true,
-      },
+      // image: {
+      //   class: ImageTool,
+      //   inlineToolbar: false,
+      // },
+      // code: {
+      //   class: Code,
+      //  inlineToolbar: false,
+      // },
       // gptApiBlockTune: {
       //   class: GptApiBlockTune,
       // },

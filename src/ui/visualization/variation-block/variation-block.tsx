@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from "react"
 import './variation-block.scss';
 import { DimensionLabel } from "../dimension-label/dimension-label";
-import { Bookmark, AutoAwesome } from "@mui/icons-material";
+import { Bookmark, AutoAwesome, AltRoute } from "@mui/icons-material";
 import useCurrStore from "../../../store/use-curr-store";
 import useResponseStore from "../../../store/use-response-store";
 import useDimStore from "../../../store/use-dim-store";
@@ -9,7 +9,7 @@ import DatabaseManager from "../../../db/database-manager";
 import useSelectedStore from "../../../store/use-selected-store";
 import { dimensionsToAxes } from "../scatter-space/scatter-space.helper";
 import { allDimensionFiltersOff, blockIsFilteredIn } from "./variation-block.helper";
-import { addSimilarNodesToSpace } from "../../../util/space-generation-util";
+import { addSimilarNodesToSpace, continueIdeaInSpace } from "../../../util/space-generation-util";
 import { CircularProgress } from "@mui/material";
 import useEditorStore from "../../../store/use-editor-store";
 
@@ -22,6 +22,9 @@ export const VariationBlock = ({ block, zoom, color, scaleIn }) => {
   const {setSelectedResponse} = useSelectedStore();
   const {dimensions} = useDimStore();
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loadingContinue, setLoadingContinue] = useState(false);
+  const [continueOpen, setContinueOpen] = useState(false);
+  const [continueText, setContinueText] = useState("");
   const {api,editedMap} = useEditorStore();
   const axes = dimensionsToAxes(dimensions)
   const {myFav} = useDimStore();
@@ -182,7 +185,7 @@ export const VariationBlock = ({ block, zoom, color, scaleIn }) => {
       <div className="labels">
           {block.Keywords.map(keyword => <DimensionLabel {...{keyword}} />)}
       </div>
-      <DetailsFooter {...{block, loadingMore, setLoadingMore, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
+      <DetailsFooter {...{block, loadingMore, setLoadingMore, loadingContinue, setLoadingContinue, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
   </div>;
   } else if (zoom <= 12) {
     return <div key={block.ID + 'sum'} className={`block-sum ${nodeClassName()}`} style={{background: color+'99'}} onClick= {()=>onClickHandler(block)}>
@@ -200,7 +203,7 @@ export const VariationBlock = ({ block, zoom, color, scaleIn }) => {
       <div className="labels">
         {Object.entries(block.Dimension.categorical).map(([key, value]) => <DimensionLabel {...{keyword: `${key} : ${value}`}} />)}
       </div>
-      <DetailsFooter {...{block, loadingMore, setLoadingMore, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
+      <DetailsFooter {...{block, loadingMore, setLoadingMore, loadingContinue, setLoadingContinue, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
       {/* <DetailsFooter {...{block, onBookmarkHandler, onClickHandler, onSelectedHandler,}} /> */}
     </div>;
   } else {
@@ -215,13 +218,13 @@ export const VariationBlock = ({ block, zoom, color, scaleIn }) => {
         <div className="labels">
           {Object.entries(block.Dimension.categorical).map(([key, value]) => <DimensionLabel {...{keyword: `${key} : ${value}`}} />)}
         </div>
-        <DetailsFooter {...{block, loadingMore, setLoadingMore, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
+        <DetailsFooter {...{block, loadingMore, setLoadingMore, loadingContinue, setLoadingContinue, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
       </div>
     </div>;
   }
 };
 
-const DetailsFooter = ({block, loadingMore, setLoadingMore, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}) => (
+const DetailsFooter = ({block, loadingMore, setLoadingMore, loadingContinue, setLoadingContinue, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}) => (
   <div className="details-footer">
     <button onClick={() => {
       if (loadingMore) return;
@@ -240,6 +243,30 @@ const DetailsFooter = ({block, loadingMore, setLoadingMore, onBookmarkHandler, o
           <CircularProgress style={{color: '#777'}} size={20} />
           Generating Similar Responses...
         </div>
+      }
+    </button>
+    <button onClick={() => {
+      if (loadingContinue) return;
+      setLoadingContinue(true);
+
+      continueIdeaInSpace(block, nodeMap, setNodeMap, {
+        count: 1,
+        // optional: you can pass an instruction later via a popup
+        instruction: "Continue developing this idea with more concrete branching choices and consequences."
+      }).then(() => setLoadingContinue(false))
+        .catch(() => setLoadingContinue(false));
+    }}>
+      {
+        !loadingContinue ?
+          <div className="icon-button">
+            <AltRoute style={{color: '#777', width: '20px', height: '20px'}} />
+            Continue Idea
+          </div>
+          :
+          <div>
+            <CircularProgress style={{color: '#777'}} size={20} />
+            Continuing Idea...
+          </div>
       }
     </button>
     <button onClick={() => onBookmarkHandler(block)} style={{

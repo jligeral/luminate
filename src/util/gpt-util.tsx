@@ -96,7 +96,7 @@ export async function generateDimensions(query, context){
 }
 
 export async function generateCategoricalDimensions(prompt, catNum, valNum, temperature=TEMPERATURE){
-  console.log("API KEY = ", getEnvVal('VITE_OPENAI_API_KEY'));
+  // console.log("API KEY = ", getEnvVal('VITE_OPENAI_API_KEY'));
   const message = nominalDimensionDef + `list ${catNum} nominal dimensions and associated ${valNum} possible values
      on which we can categorize and assess the content for the prompt: ${prompt}
     ####

@@ -21,6 +21,7 @@
     "@mui/icons-material": "^5.14.18",
     "@mui/material": "^5.14.18",
     "@vercel/blob": "^2.0.1",
+    "@vercel/node": "^5.5.27",
     "bootstrap": "^5.3.2",
     "d3": "^7.8.5",
     "dotenv": "^16.3.1",
@@ -37,6 +38,7 @@
   "devDependencies": {
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
+    "@typescript-eslint/parser": "^8.53.1",
     "@vitejs/plugin-react": "^4.2.0",
     "eslint": "^8.53.0",
     "eslint-plugin-react": "^7.33.2",

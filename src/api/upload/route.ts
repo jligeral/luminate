@@ -1,50 +1,36 @@
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-import { NextResponse } from "next/server";
+import { VercelRequest, VercelResponse } from "@vercel/node";
+import { handleUpload } from "@vercel/blob/client";
 
-export async function POST(req: Request) {
-  // Fail fast with a clear message
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    return NextResponse.json(
-      {
-        error:
-          "Missing BLOB_READ_WRITE_TOKEN. Add it to .env.local and Vercel Environment Variables.",
-      },
-      { status: 500 }
-    );
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Only POST is valid
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  let body: HandleUploadBody;
-  try {
-    body = (await req.json()) as HandleUploadBody;
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+  // Fail fast if env var missing
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    return res.status(500).json({
+      error: "Missing BLOB_READ_WRITE_TOKEN. Add it in Vercel env vars and .env.local.",
+    });
   }
 
   try {
     const jsonResponse = await handleUpload({
-      body,
-      request: req,
-
-      onBeforeGenerateToken: async () => {
-        return {
-          allowedContentTypes: ["image/*"], // only images
-          // allowedContentTypes: ["image/png", "image/jpeg", "image/webp", "image/gif"],
-          maximumSizeInBytes: 10 * 1024 * 1024, // 10MB
-          tokenPayload: JSON.stringify({ purpose: "editorjs-image" }),
-        };
-      },
-
-      // Optional
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
-        console.log("Upload completed:", blob.url, tokenPayload);
+      body: req.body,          // JSON body from client SDK
+      request: req as any,     // handleUpload expects a Request-like object
+      onBeforeGenerateToken: async () => ({
+        allowedContentTypes: ["image/*"],
+        maximumSizeInBytes: 10 * 1024 * 1024, // 10MB
+        tokenPayload: JSON.stringify({ purpose: "editorjs-image" }),
+      }),
+      onUploadCompleted: async () => {
+        // Optional: store metadata in DB
       },
     });
 
-    return NextResponse.json(jsonResponse);
+    return res.status(200).json(jsonResponse);
   } catch (err: any) {
-    return NextResponse.json(
-      { error: err?.message ?? "Blob upload init failed." },
-      { status: 500 }
-    );
+    return res.status(500).json({ error: err?.message ?? "Upload init failed" });
   }
 }
